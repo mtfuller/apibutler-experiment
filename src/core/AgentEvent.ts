@@ -1,0 +1,1 @@
+export type AgentEvent = 'launch' | 'complete' | 'abort' | 'tic';
