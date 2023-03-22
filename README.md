@@ -1,43 +1,32 @@
-# softwaredev-chatgpt-experiment
+# apibutler-experiment
 
-### Software Development Agent Behavior Tree
-```mermaid
-flowchart TD
-    A[->] --> B[?]
-   
-    B[?] --> D([HasTasks])
+APIButler is a small experiment I created to test the capabilities of OpenAI's ChatGPT API. The goal of this experiment is to see if the ChatGPT API could be used  in the generation of backend API apps.
 
-    B --> E[->]
-    E --> F[AskForAssignment]
-    E --> G[DetermineTasksFromAssignment]
+![API BUTLER](./docs/apibutler.png)
 
-    A --> C[?]
+## Background
 
-    C --> H[?]
+From my testing, I found ChatGPT to be lacking when attempting to generate the correct steps to develop a backend API application. However, when given an example input of a description of an application and an example output of generated JavaScript, ChatGPT performed much better.
 
-    H --> I([HasNoMoreTasks])
-    H --> J[CompleteNextTask]
+After iterating through a few attempts, I settled on creating an AI agent that looks at an existing NodeJS project to generate the backend application, based on the user's prompt.
 
-    C --> K[ResolveUnprocessableTask]
+## Getting Started
 
-```
+### Requirements
+ - OpenAI API Key
+ - NodeJS >= 16.x or greater.
 
-### Potential
-```mermaid
-flowchart TD
-    A[->] --> B[?]
-   
-    B[?] --> D([HasTasks])
+### Running APIButler
 
-    B --> E[->]
-    E --> F[AskForAssignment]
-    E --> G[DetermineTasksFromAssignment]
+Update `clients/chatgpt/Index.ts`, setting the OpenAI key to your own key (I know this is not ideal practice, but I haven't gotten around to add dotenv).
 
-    A --> C[ResolveUnprocessableTask]
-
-```
+Install dependencies using `yarn`. Next, simply run `yarn start ./my-empty-directory` and you should see the APIButler agent start up.
 
 ### Example Prompts
+
+The following are some example prompts that I have submitted and have resulted in successfully generated NodeJS project.
+
+Try them out!
 
 #### Ride Sharing App
 ```
@@ -62,4 +51,39 @@ A new startup wants to launch a new social media platform. This platform will al
 #### Restaurant Reservation Management App
 ```
 A tech company wishes to create a brand new restaurant reservation management application. This app will be used to allow customers to look to see if a restaurant has any available tables at a given day and time. Once a customer has reserved a table, no other customer can reserve it. We need a backend API to keep track of all the available timeslots for a restaurant. The API needs to store data on each restaurant including name, address, available time slots, etc. We need to make sure we store the first name, last name, and phone number for a customer for each reservation. Please generate a microservice to meet these requirements.
+```
+
+## The AI Agent
+
+This is the basic flow of the agent:
+ 1. Ask for an assignment from the user.
+ 2. Generate a collection of data schemas from the user's assignment prompt.
+ 3. Generate a JavaScript model class file from each data schema.
+ 4. Generate a JavaScript service class from each model class.
+ 5. Generate a JavaScript controller class from each service class.
+ 6. Generate a JavaScript index from all the controllers.
+ 7. Copy over any static files (config, Dockerfile, etc.).
+
+I decided (may have been overkill) to utilize behavior trees to define the how the agent should interact with the user.
+
+### APIButler Behavior Tree
+```mermaid
+flowchart LR
+    A[?]
+    A --> B[->]
+    A --> C[->]
+    A --> D[->]
+   
+    B --> E([HasNoAssignment])
+    B --> F[AskForAssignment]
+
+    C --> G([HasNoAssignment])
+    C --> H[GenerateDataModels]
+
+    D --> I([NoProjectExists])
+    D --> J[GenerateModelFiles]
+    D --> K[GenerateServiceFiles]
+    D --> L[GenerateControllerFiles]
+    D --> M[GenerateMainFile]
+    D --> N[GenerateProjectAction]
 ```
