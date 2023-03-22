@@ -1,5 +1,5 @@
 import { rc, ResultCode, RunningAction } from "blueshell";
-import { BasePrompt, Message } from "../clients/chatgpt/prompts/BasePrompt";
+import { BasePrompt } from "../clients/chatgpt/BasePrompt";
 import { AgentEvent } from "../core/AgentEvent";
 import { AgentState } from "../core/AgentState";
 
@@ -11,9 +11,36 @@ export abstract class ChatGptAction extends RunningAction<AgentState, AgentEvent
         super(name);
     }
 
-    protected abstract generatePrompt(state: AgentState): BasePrompt;
+    protected abstract generatePrompts(state: AgentState): BasePrompt[];
+
+    protected beforeChatCompletion(state: AgentState): void {
+        
+    }
+
+    protected afterChatCompletion(state: AgentState): void {
+        
+    }
+
+    protected async sendPromptsForCompletion(prompts: BasePrompt[], state: AgentState): Promise<string[]> {
+        const responses = []
+
+        this.beforeChatCompletion(state)
+
+        for (const prompt of prompts) {
+            responses.push(await this.createChatCompletion(prompt, state));
+        }
+
+        this.afterChatCompletion(state)
+
+        return responses;
+    }
 
     protected async createChatCompletion(prompt: BasePrompt, state: AgentState): Promise<string> {
+        state.logger.write(`${"=".repeat(40)}\nNEW CHATGPT CHAT COMPLETION\n${"=".repeat(40)}\n`)
+
+        const rawPrompt = prompt.map(x => `${x.role.toUpperCase()}: ${x.content}`).join("\n");
+        state.logger.write(`PROMPT:\n${rawPrompt}\n`)
+
         const resp = await state.chatgptClient.createChatCompletion(prompt);
 
         const choices = resp.data.choices;
@@ -28,28 +55,25 @@ export abstract class ChatGptAction extends RunningAction<AgentState, AgentEvent
             throw new Error(`ChatGPT response returned undefined message.`);
         }
 
+        state.logger.write(`CHATGPT:\n${message.content}\n`)
+
         return message.content;
     }
 
-    protected abstract handleResponse(response: Promise<string>, state: AgentState): void;
+    protected abstract handleResponse(response: Promise<string[]>, state: AgentState): void;
 
     protected activate(state: AgentState, event: AgentEvent): ResultCode {
-        if (state.debug) {
-            let msg = `${this.name}`;
-            console.log(`\n ------------------------`);
-            console.log(`| CHATGPT ACTION | ${msg} |`);
-            console.log(` ------------------------\n`);
-        }
 
         this._status = rc.RUNNING;
 
         try {
             
-            const prompt = this.generatePrompt(state);
+            const prompts = this.generatePrompts(state);
 
-            const response = this.createChatCompletion(prompt, state);
-    
-            this._promise = this.handleResponse(response, state);
+            const responses = this.sendPromptsForCompletion(prompts, state);
+
+            this._promise = this.handleResponse(responses, state);
+            
 
         } catch (e) {
             console.error(e);
@@ -58,6 +82,7 @@ export abstract class ChatGptAction extends RunningAction<AgentState, AgentEvent
 
         
         return this.status!;
+        
     }
 
     /**

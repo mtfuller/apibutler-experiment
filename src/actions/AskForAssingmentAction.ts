@@ -1,7 +1,6 @@
 import { ResultCode, rc } from "blueshell";
 import { AgentEvent } from "../core/AgentEvent";
 import { AgentState } from "../core/AgentState";
-import { Terminal } from "../util/Terminal";
 import { AgentAction } from "./AgentAction";
 
 export class AskForAssignmentAction extends AgentAction {
@@ -22,7 +21,13 @@ export class AskForAssignmentAction extends AgentAction {
 
     private async askForAssignment(state: AgentState) {
 
-        const answer = await state.terminal.prompt("What's my assignment?")
+        await state.terminal.displayMessageFromAPIButler(
+            `Hello! My name is APIButler. I am an AI-powered API generation tool. You simply ` + 
+            ` give me an assignment, a description of an API backend that you want, and then ` + 
+            `I will try my best to generate a working RESTful API service.`
+        , 3000);
+
+        const answer = await state.terminal.prompt("I am ready to get to work! What is my assigment?")
 
         state.assignment = answer;
 

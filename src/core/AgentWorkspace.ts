@@ -2,15 +2,11 @@ import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
 
-const whitelistedCommands = [
-    "npm install",
-    "npm init"
-]
-
 export type FileType = "MODEL" | "CONTROLLER" | "SERVICE" | "DB" | "MAIN"
 
 export interface WorkspaceFile {
     type: FileType
+    isGenerated: boolean 
     filename: string
     packages: string[]
     dependencies: string[]
@@ -23,42 +19,44 @@ export interface WorkspaceModel extends WorkspaceFile {
 }
 
 export class AgentWorkspace {
-    path: string
-    isGenerated: boolean = false;
+    filepath: string
+    isGenerated: boolean = false
+    dataModel: WorkspaceModel[] = []
     workspaceFiles: WorkspaceFile[] = []
 
 
-    constructor(path: string) {
-        this.path = path;
-        //console.log(this.runCommand("npm init -y"))
+    constructor(filepath: string) {
+        this.filepath = path.resolve(filepath);
+    }
+
+    addDataModel(workspaceModel: WorkspaceModel) {
+        this.dataModel.push(workspaceModel);
     }
 
     addWorkspaceFile(workspaceFile: WorkspaceFile) {
         this.workspaceFiles.push(workspaceFile);
     }
 
-
-
     writeFile(relpath: string, contents: string) {
-        const targetPath = path.join(this.path, relpath);
+        const targetPath = path.join(this.filepath, relpath);
 
         fs.writeFileSync(targetPath, contents);
     }
 
     readFile(relpath: string): string {
-        const targetPath = path.join(this.path, relpath);
+        const targetPath = path.join(this.filepath, relpath);
 
         return fs.readFileSync(targetPath, 'utf-8');
     }
 
     isFileCreated(relpath: string): boolean {
-        const targetPath = path.join(this.path, relpath);
+        const targetPath = path.join(this.filepath, relpath);
 
         return fs.existsSync(targetPath);
     }
 
     runCommand(command: string): string {
-        const results = execSync(command, { cwd: this.path });
+        const results = execSync(command, { cwd: this.filepath });
 
         return results.toString();
     }

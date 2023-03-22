@@ -11,18 +11,11 @@ export abstract class AgentAction extends RunningAction<AgentState, AgentEvent> 
     }
 
     protected activate(state: AgentState, event: AgentEvent): ResultCode {
-        if (state.debug) {
-            let msg = `${this.name}`;
-            console.log(`\n -----------------`);
-            console.log(`| ACTION | ${msg} |`);
-            console.log(` -----------------\n`);
-            console.log(`assignment: ${state.assignment}`);
-            console.log(`# of tasks: ${state.tasks.length}`)
-        }
 
         this._status = rc.RUNNING;
         
         return this.status!;
+        
     }
 
     /**

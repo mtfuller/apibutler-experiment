@@ -1,29 +1,22 @@
 import { BlueshellState } from "blueshell";
-import { ChatGPT } from "../clients/ChatGPT";
 import ChatGPTClient from "../clients/chatgpt/Index";
+import { LogFile } from "../util/LogFile";
 import { Terminal } from "../util/Terminal";
 import { AgentWorkspace } from "./AgentWorkspace";
-import { BetterTask, Task } from "./Task";
-
-export interface DataModel {
-    type: "MODEL",
-    filename: string,
-    packages: string[],
-    dependencies: string[]
-}
+import { WorkspaceTemplate } from "./WorkspaceTemplate";
 
 export class AgentState implements BlueshellState {
     __blueshell: any;
     debug: boolean;
     
     assignment: string | null = null;
-    dataModels: DataModel[] = [];
-    tasks: BetterTask[] = [];
 
     constructor(
         public chatgptClient: ChatGPTClient,
         public terminal: Terminal,
-        public workspace: AgentWorkspace
+        public workspace: AgentWorkspace,
+        public logger: LogFile,
+        public workspaceTemplate: WorkspaceTemplate
     ) {
         this.debug = true;
       }

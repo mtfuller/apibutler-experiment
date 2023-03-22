@@ -1,5 +1,5 @@
 import { Configuration, OpenAIApi } from "openai";
-import { BasePrompt } from "./prompts/BasePrompt";
+import { BasePrompt } from "./BasePrompt";
 
 export default class ChatGPTClient {
     private openAIClient: OpenAIApi
@@ -17,7 +17,7 @@ export default class ChatGPTClient {
             model: "gpt-3.5-turbo",
             messages: prompt,
             temperature: 0.7,
-            max_tokens: 256,
+            max_tokens: 1024,
             top_p: 1,
             frequency_penalty: 0,
             presence_penalty: 0

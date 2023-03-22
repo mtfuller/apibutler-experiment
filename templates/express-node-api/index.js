@@ -1,7 +1,8 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-const employeeController = require('./controllers/EmployeeController');
+const ownerController = require('./controllers/OwnerController');
+const petController = require('./controllers/PetController');
 const db = require('./db');
 
 // Parse incoming request bodies in a middleware before your handlers
@@ -12,7 +13,8 @@ async function main() {
   await db.connect();
 
   // Define routes
-  app.use('/employees', employeeController);
+  app.use('/api/owners', ownerController);
+  app.use('/api/pets', petController);
 
   // Start the server
   const PORT = process.env.PORT || 3000;
